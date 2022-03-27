@@ -1,2 +1,2 @@
 # streaminfo
-Fetch stream metadata ftom a shoutcast server
+Fetch stream metadata from a shoutcast server
