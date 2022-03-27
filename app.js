@@ -1,4 +1,5 @@
-const PORT = 443;
+require('dotenv').config();
+const PORT = process.env.PORT;
 
 const http = require('http');
 const axios = require('axios');

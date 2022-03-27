@@ -1,6 +1,6 @@
 const axios = require('axios');
 const moment = require('moment');
-require('dotenv').config();
+// require('dotenv').config();
 
 // The url of the json file at the shoutcast server take nfrom the local variables
 const url = process.env.URL;
