@@ -14,6 +14,7 @@ const io = socketio(server, {
     }
 });
 
+// Actions that happen when a new listener connects
 io.on("connection", async (socket) => {
     // Call the function that sends the stream info to the new listener
     await sendToNew(socket);
@@ -23,27 +24,20 @@ server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 const tracks = require('./call.js');
 
-// // initialize the object that will hold the current track
-// var theCheck = {
-//   "artist": "",
-//   "title": "",
-// //   "time": ""
-// };
+// Initialize the object that will hold the current track start time
+var check = "";
 
-// Temporary Check
-var theCheck = "";
-
-// Function that calls the call function
+// The function that calls the call function
 async function getResponse() {
     return await tracks.callInfo();
 }
 
 // The function that sends the stream info to all listeners
-async function sendToAll(){
+async function sendToAll() {
   var response = await getResponse();
-  if (await response && response !== theCheck) {
-    theCheck = response;
-    io.emit('streaminfo', await response);
+  if (await response && response[0].time !== check) {
+    check = response[0].time;
+    io.emit('streaminfo', await response[0].title);
   } 
 }
 
@@ -51,15 +45,16 @@ async function sendToAll(){
 async function sendToNew(socket) {
     var response = await getResponse();
     if (await response) {
-        socket.emit('streaminfo', (await response) + ' (initial)' )
+        // socket.emit('streaminfo', (await response) + ' (initial)' )
+        socket.emit('streaminfo', (await response[0].title) + '(initial)')
     } else {
-        socket.emit('streaminfo', 'Error loading the stream info. Please hit Refresh.' )
+        socket.emit('streaminfo', 'Error loading the stream info.' )
     }   
 }
 
-// Function that sets the interval
+// The function that sets the interval
 function setTheInterval() {
-  var interval = setInterval(sendToAll, 2000);
+  var interval = setInterval(sendToAll, 3000);
 }
 
 // Call the interval function on initialize
