@@ -9,7 +9,16 @@
 </head>
 
 <body>
-    <div style='font-size: 20px' id="mndbng-track-container">Loading...</div>
+    <div style='font-size: 20px' id="mndbng-track-container">
+        <div>
+            <span>Artist: </span>
+            <span id="mndbng-track-artist-container">Loading...</span>
+        </div>
+        <div>
+            <span>Title: </span>
+            <span id="mndbng-track-title-container">Loading...</span>
+        </div>   
+    </div>
     <div style='font-size: 20px' id="mndbng-history-container">Loading...</div>
 </body>
 
@@ -28,15 +37,21 @@
         var incomingFirstTrackArtist = msg[0].artist;
         var incomingFirstTrackTitle = msg[0].title;
         
-        // Current values for track artist, title, time
+        // Current values for track artist, title
         var currentFirstTrackArtist = $('.mndbng-track-artist:eq(0)').html();
         var currentFirstTrackTitle = $('.mndbng-track-title:eq(0)').html();
         
         // Check first if the incoming track is already received and rendered by comparing the incoming track artist and title with the current track artist and title
         if (currentFirstTrackArtist !== incomingFirstTrackArtist && currentFirstTrackTitle !== incomingFirstTrackTitle) {
             // Initial Track
-            $('#mndbng-track-container').fadeOut(500, function() {
-            $('#mndbng-track-container').text(incomingFirstTrackArtist + " - " + incomingFirstTrackTitle).fadeIn(1000) });
+            trackArtistContainer = $('#mndbng-track-artist-container');
+            trackTitleContainer = $('#mndbng-track-title-container');
+            trackArtistContainer.fadeOut(500, function() {
+                trackArtistContainer.text(incomingFirstTrackArtist).fadeIn(1000) 
+            });
+            trackTitleContainer.fadeOut(500, function() {
+                trackTitleContainer.text(incomingFirstTrackTitle).fadeIn(1000) 
+            });
 
             // Initial History
             var html = "<ul id='mndbng-history'>";
@@ -58,7 +73,7 @@
             // Render the HTML list
             historyContainer = $('#mndbng-history-container');
             historyContainer.fadeOut(500, function() {
-            historyContainer.html(html).fadeIn(1000) 
+                historyContainer.html(html).fadeIn(1000) 
             });
             console.log('first');
         }
@@ -73,10 +88,10 @@
         var incomingFirstTrackArtist = msg[0].artist;
         var incomingFirstTrackTitle = msg[0].title;
 
-        // Current values for track artist, title, time
-        var currentFirstTrackTitle = $('.mndbng-track-title:eq(0)').html();
+        // Current values for track artist, title
         var currentFirstTrackArtist = $('.mndbng-track-artist:eq(0)').html();
-
+        var currentFirstTrackTitle = $('.mndbng-track-title:eq(0)').html();
+        
         // Check first if the incoming track is already received and rendered by comparing the incoming track artist and title with the current track artist and title
         if (currentFirstTrackArtist !== incomingFirstTrackArtist && currentFirstTrackTitle !== incomingFirstTrackTitle) {
             // After initial history
@@ -87,12 +102,19 @@
             $('#mndbng-history').children().last().fadeOut(1000).remove();
             
             // Set the time of the first track to 'NOW ON AIR' and the time of the second track to it's actual track time
+            // We remove the last 3 characters (the seconds) from the track time
             $('.mndbng-track-time:eq(0)').html("NOW ON AIR").fadeIn(1000);
             $('.mndbng-track-time:eq(1)').html(msg[1].time.slice(0, -3)).fadeIn(1000);
             
             // After initial track
-            $('#mndbng-track-container').fadeOut(500, function() {
-            $('#mndbng-track-container').text(incomingFirstTrackArtist + " - " + incomingFirstTrackTitle).fadeIn(1000) });
+            trackArtistContainer = $('#mndbng-track-artist-container');
+            trackTitleContainer = $('#mndbng-track-title-container');
+            trackArtistContainer.fadeOut(500, function() {
+                trackArtistContainer.text(incomingFirstTrackArtist).fadeIn(1000) 
+            });
+            trackTitleContainer.fadeOut(500, function() {
+                trackTitleContainer.text(incomingFirstTrackTitle).fadeIn(1000) 
+            });
             console.log('second');
         } 
 
