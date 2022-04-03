@@ -5,11 +5,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Socket Thing1</title>
+    <title>Streaminfo Front-end Test</title>
 </head>
 
 <body>
-    <div style='font-size: 70px' id="track-container">Loading...</div>
+    <div style='font-size: 20px' id="mndbng-track-container">Loading...</div>
+    <div style='font-size: 20px' id="mndbng-history-container">Loading...</div>
 </body>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
@@ -20,13 +21,86 @@
     // const socket = io('http://localhost:80/');
     const socket = io('wss://streaminfo.naquema.com/');
 
-    // Message from server
-    socket.on('streaminfo', function(msg) {
-        console.log('NOW ON AIR: ' + msg);
-        $('#track-container').fadeOut(500, function() {
-        $('#track-container').text(msg).fadeIn(1000) });
+    // Actions that happen when the initial message (msg) is received from the server
+    socket.on('streaminfoinitial', function(msg) {
+        
+        // Incoming values for track artist, title, time
+        var incomingFirstTrackArtist = msg[0].artist;
+        var incomingFirstTrackTitle = msg[0].title;
+        
+        // Current values for track artist, title, time
+        var currentFirstTrackArtist = $('.mndbng-track-artist:eq(0)').html();
+        var currentFirstTrackTitle = $('.mndbng-track-title:eq(0)').html();
+        
+        // Check first if the incoming track is already received and rendered by comparing the incoming track artist and title with the current track artist and title
+        if (currentFirstTrackArtist !== incomingFirstTrackArtist && currentFirstTrackTitle !== incomingFirstTrackTitle) {
+            // Initial Track
+            $('#mndbng-track-container').fadeOut(500, function() {
+            $('#mndbng-track-container').text(incomingFirstTrackArtist + " - " + incomingFirstTrackTitle).fadeIn(1000) });
+
+            // Initial History
+            var html = "<ul id='mndbng-history'>";
+            var isFirst = true;
+            // Create the HTML list that will be rendered
+            $.each(msg, function (index, item) {
+                var time = item.time;
+                // For the first track we set the time to 'NOW ON AIR'
+                if (isFirst) {
+                    time = 'NOW ON AIR';
+                    isFirst = false;
+                } else {
+                    // We remove the last 3 characters (the seconds) from the track time
+                    time = time.slice(0, -3);
+                }
+                html += "<li><div class='mndbng-track-time'>" + time + "</div><div class='mndbng-track-artist'>" + item.artist + "</div><div class='mndbng-track-title'>" + item.title + "</div></li>";
+            });
+            html+="</ul>";
+            // Render the HTML list
+            historyContainer = $('#mndbng-history-container');
+            historyContainer.fadeOut(500, function() {
+            historyContainer.html(html).fadeIn(1000) 
+            });
+            console.log('first');
+        }
+
     });
+
+    // Actions that happen when the messages after the initial message (msg) are received from the server
+    socket.on('streaminfo', function(msg) {
+        
+        // Incoming values for track artist, title, time
+        var incomingFirstTrackTime = msg[0].time;
+        var incomingFirstTrackArtist = msg[0].artist;
+        var incomingFirstTrackTitle = msg[0].title;
+
+        // Current values for track artist, title, time
+        var currentFirstTrackTitle = $('.mndbng-track-title:eq(0)').html();
+        var currentFirstTrackArtist = $('.mndbng-track-artist:eq(0)').html();
+
+        // Check first if the incoming track is already received and rendered by comparing the incoming track artist and title with the current track artist and title
+        if (currentFirstTrackArtist !== incomingFirstTrackArtist && currentFirstTrackTitle !== incomingFirstTrackTitle) {
+            // After initial history
+            // Add the new track to the top of the list and remove the last track
+            // We remove the last 3 characters (the seconds) from the track time
+            var li = "<li><div class='mndbng-track-time'>" + incomingFirstTrackTime.slice(0, -3) + "</div><div class='mndbng-track-artist'>" + incomingFirstTrackArtist + "</div><div class='mndbng-track-title'>" + incomingFirstTrackTitle + "</div></li>";
+            $(li).prependTo("#mndbng-history").hide().slideDown(1000).fadeIn(2000);
+            $('#mndbng-history').children().last().fadeOut(1000).remove();
+            
+            // Set the time of the first track to 'NOW ON AIR' and the time of the second track to it's actual track time
+            $('.mndbng-track-time:eq(0)').html("NOW ON AIR").fadeIn(1000);
+            $('.mndbng-track-time:eq(1)').html(msg[1].time.slice(0, -3)).fadeIn(1000);
+            
+            // After initial track
+            $('#mndbng-track-container').fadeOut(500, function() {
+            $('#mndbng-track-container').text(incomingFirstTrackArtist + " - " + incomingFirstTrackTitle).fadeIn(1000) });
+            console.log('second');
+        } 
+
+    });  
 
 </script>
 
 </html>
+
+
+

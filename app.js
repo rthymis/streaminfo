@@ -37,7 +37,8 @@ async function sendToAll() {
   var response = await getResponse();
   if (await response && response[0].time !== check) {
     check = response[0].time;
-    io.emit('streaminfo', await response[0].title);
+    // io.emit('streaminfo', await response[0].title);
+    io.emit('streaminfo', await response );
   } 
 }
 
@@ -45,10 +46,10 @@ async function sendToAll() {
 async function sendToNew(socket) {
     var response = await getResponse();
     if (await response) {
-        // socket.emit('streaminfo', (await response) + ' (initial)' )
-        socket.emit('streaminfo', (await response[0].title) + '(initial)')
+        // socket.emit('streaminfo', (await response[0].title) + '(initial)')
+        socket.emit('streaminfoinitial', await response)
     } else {
-        socket.emit('streaminfo', 'Error loading the stream info.' )
+        socket.emit('streaminfoinitial', 'Error loading the stream info.' )
     }   
 }
 

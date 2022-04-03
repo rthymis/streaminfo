@@ -1,5 +1,5 @@
 const axios = require('axios');
-const moment = require('moment');
+const moment = require('moment-timezone');
 require('dotenv').config();
 
 // The url of the json file at the shoutcast server taken from the local variables
@@ -25,7 +25,7 @@ async function handleResponse(resp) {
 
 // Convert unix time to (hh:mm) format and Greek timezone
 async function format_time(s) {
-  return moment.unix(s).utcOffset('+0200').format('HH:mm');
+  return moment.unix(s).tz('Europe/Athens').format('HH:mm:ss');
 }
 
 // The function that makes the call to the shoutcast server with axios
