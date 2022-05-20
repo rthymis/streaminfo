@@ -61,6 +61,12 @@ function setTheInterval() {
 // Call the interval function on initialize
 setTheInterval();
 
+// Set the io variable in a global variable for use by the chat
+global.io = io;
+
+// Require the chat module
+const chat = require('./chat.js');
+
 
 
 

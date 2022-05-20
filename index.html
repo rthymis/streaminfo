@@ -43,10 +43,64 @@
             background-color: black;
             color: white;
         }
+
+        #message-container {
+            overflow: auto;
+            height: 100px;
+        }
+
+        #chat-container {
+            height: 200px;
+            width: 400px;
+        }
+
+        #send-container {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        #name-input {
+            display: block;
+            width: 30%;
+        }
+
+        #message-input {
+            width: 80%; 
+        }
+
+        #name-input,
+        #message-input,
+        #send-button {
+            padding: 5px;
+            border: 0;
+            box-sizing: border-box;
+        }
+
+        #send-button {
+            display: inline;
+            width: 20%;
+            margin-left: 10px;
+        }
+
+        #message-send-container {
+            display: flex;
+            flex-direction: row;
+            margin-top: 10px;
+        }
     </style>
 </head>
 
 <body>
+    <div id="chat-container">
+        <div id="message-container"></div>
+        <form id="send-container">
+            <input type="text" id="name-input" placeholder="name" maxlength="20" oninvalid="this.setCustomValidity('Enter a username here!')" oninput="this.setCustomValidity('')" required>
+            <div id="message-send-container">
+                <input type="text" id="message-input" placeholder="Say something..." maxlength="220" oninvalid="this.setCustomValidity('Enter a message here!')" oninput="this.setCustomValidity('')" required>
+                <button type="submit" id="send-button">Send</button>
+            </div>
+        </form>
+    </div>
     <div id="mndbng-track-container">
         <div>
             <span class="mndbng-track-label">Artist: </span>
@@ -66,12 +120,11 @@
 
 <script>
 
-    // const socket = io('http://localhost:80/');
-    const socket = io('wss://streaminfo.naquema.com/');
+    const socket = io('http://localhost:80/');
+    // const socket = io('wss://streaminfo.naquema.com/');
 
     // Actions that happen when the initial message (msg) is received from the server
     socket.on('streaminfoinitial', function(msg) {
-        
         // Incoming values for track artist, title, time
         var incomingFirstTrackArtist = msg[0].artist;
         var incomingFirstTrackTitle = msg[0].title;
@@ -169,6 +222,32 @@
         } 
 
     });  
+
+    // Chat
+    const messageForm = $('#send-container');
+    const messageInput = $('#message-input');
+    const nameInput = $('#name-input');
+    const messageContainer = $('#message-container');
+
+    socket.on('chat-message', data => {
+        appendMessage(data.track);
+        appendMessage(data.name + ": " + data.message);
+        appendMessage(new Date().toLocaleString('en-US', { timeZone: 'Europe/Athens', hour: '2-digit', minute: '2-digit', hour12: false }));
+    })
+
+    messageForm.submit(function( event ) {
+        event.preventDefault();
+
+        const message = {message: messageInput.val(), name: nameInput.val()};
+        socket.emit('send-chat-message', message)
+        messageInput.val("");
+    });
+
+    function appendMessage(message) {
+        const messageElement = document.createElement('div')
+        messageElement.innerText = message
+        messageContainer.prepend(messageElement)
+    }
 
 </script>
 

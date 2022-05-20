@@ -16,16 +16,23 @@ async function handleResponse(resp) {
       let track = {
         "artist" : item.metadata.tpe1,
         "title" : item.metadata.tit2,
-        "time" : await format_time(item.playedat)
+        "time" : await formatTime(item.playedat, 'HH:mm:ss')
       }
       tracks.push(track);
     });
+    // Set the tracks object to a global variable for use by the chat
+    global.tracks = tracks;
     return tracks;
 }
 
 // Convert unix time to (hh:mm) format and Greek timezone
-async function format_time(s) {
-  return moment.unix(s).tz('Europe/Athens').format('HH:mm:ss');
+async function formatTime(time, format) {
+  return moment.unix(time).tz('Europe/Athens').format(format);
+}
+
+// Returns the current time (now)
+function timeNow() {
+  return moment().format("DD MMM YY, HH:mm");
 }
 
 // The function that makes the call to the shoutcast server with axios
@@ -33,8 +40,8 @@ async function callInfo() {
     return await axios(url)
     .then( async response => {
     return await handleResponse(response);
-    }).catch(err => {  });
+    }).catch(err => { "Axios error" });
 }
 
 // Export the response
-module.exports = {callInfo};
+module.exports = {callInfo, timeNow};
