@@ -19,6 +19,10 @@ var con = mysql.createConnection({
 // Connect to the database
 con.connect(function(err) {
     if (err) throw err;
+    sql = "SET NAMES utf8mb4";
+    con.query(sql, function (err, result) {
+        if (err) throw err;
+    });
     console.log("Database connected!");  
 });
 
