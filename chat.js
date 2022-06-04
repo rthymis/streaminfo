@@ -1,5 +1,6 @@
 var mysql = require('mysql');
 const time = require('./call.js');
+const crypto = require('crypto');
 
 require('dotenv').config();
 const DB_USER = process.env.DB_USER;
@@ -32,6 +33,8 @@ io.on("connection", socket => {
         message.track = global.tracks[0].artist + " - " + global.tracks[0].title;
         // Add the current time to the message
         message.time = time.timeNow();
+        // Add the unique ID to the message
+        message.id = crypto.randomUUID();
 
         if (message.name !== CHAT_ADMIN) {
             // Send the client message to all clients
@@ -41,13 +44,13 @@ io.on("connection", socket => {
             io.emit('chat-message', message);
         } else {
             message.error = "Username is already in use.";
-            ['message', 'name', 'track', 'time'].forEach(e => delete message[e]);
+            ['id', 'message', 'name', 'track', 'time'].forEach(e => delete message[e]);
             socket.emit('chat-error', message);
         }
 
         // Store the message in the database
-        sql = "INSERT INTO chat (username, message, track) VALUES ?"
-        var values = [[message.name, message.message, message.track]]
+        sql = "INSERT INTO chat (id, username, message, track) VALUES ?"
+        var values = [[message.id, message.name, message.message, message.track]]
 
         con.query(sql, [values], function (err, result) {
             if (err) throw err;
@@ -57,11 +60,11 @@ io.on("connection", socket => {
 
     socket.on('chat-delete-client',async messageId => {
         // Delete the message
-        sql = "DELETE FROM chat WHERE `index` = ?";
+        sql = "DELETE FROM chat WHERE `id` = ?";
         
-        var index = [parseInt(messageId)];
+        var id = [messageId];
         
-        con.query(sql, [index], function (err, result) {
+        con.query(sql, [id], function (err, result) {
             let message = {
                 "message" : 'Message ' + messageId + ' successfully deleted.',
                 "messageId" : messageId
