@@ -14,16 +14,41 @@ var con = mysql.createConnection({
     port: "3306",
     user: DB_USER,
     password: DB_PASSWORD,
-    database: "chat-db"
+    database: "chat-db",
+    charset : 'utf8mb4'
 });
+
+var allMessages = [];
 
 // Connect to the database
 con.connect(function(err) {
     if (err) throw err;
+    // Set the character set that supports emojis
     sql = "SET NAMES utf8mb4";
     con.query(sql, function (err, result) {
         if (err) throw err;
     });
+
+    // Get the latest 30 chat messages from the database and put in global variable
+    var initialSql = 'SELECT * FROM (SELECT * FROM chat ORDER BY datetime DESC LIMIT 30) as foo ORDER BY datetime ASC';
+    con.query(initialSql, function (err, result) {
+        if (err) throw err;
+        Object.keys(result).forEach(function(key) {
+            var row = result[key];
+            row.datetime = time.timeChat(row.datetime)
+            let message = {
+                "index": row.index,
+                "id": row.id,
+                "username": row.username,
+                "message": row.message,
+                "track": row.track,
+                "datetime": row.datetime
+            }
+            allMessages.push(message);
+          });
+          console.log(allMessages);
+    });
+
     console.log("Database connected!");  
 });
 
@@ -56,6 +81,16 @@ io.on("connection", socket => {
             if (err) throw err;
             console.log("1 record inserted");
         });
+
+        let messageForAllMessages = {
+            "index": null,
+            "id": message.id,
+            "username": message.name,
+            "message": message.message,
+            "track": message.track,
+            "datetime": message.time
+        }
+        allMessages.push(messageForAllMessages);
     })
 
     socket.on('chat-delete-client',async messageId => {
@@ -66,15 +101,22 @@ io.on("connection", socket => {
         
         con.query(sql, [id], function (err, result) {
             let message = {
-                "message" : 'Message ' + messageId + ' successfully deleted.',
+                "message" : 'Message successfully deleted.',
                 "messageId" : messageId
               }
             if (err) {
-                message.message = 'Could not delete message ' + messageId + ': ' + err;
+                message.message = 'Could not delete message: ' + err;
             }
             socket.emit('chat-delete-server-admin', message);
             socket.broadcast.emit('chat-delete-server', messageId);
         });
         
+    })
+
+    // Send all the chat messages
+    socket.on('chat-all-messages-client', () => {
+        if (allMessages !== null) {
+            socket.emit('chat-all-messages', allMessages)
+        }
     })
 });

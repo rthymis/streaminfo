@@ -35,6 +35,10 @@ function timeNow() {
   return moment().format("DD MMM YY, HH:mm");
 }
 
+function timeChat(time) {
+  return moment(time).format("DD MMM YY, HH:mm");
+}
+
 // The function that makes the call to the shoutcast server with axios
 async function callInfo() {
     return await axios(url)
@@ -44,4 +48,4 @@ async function callInfo() {
 }
 
 // Export the response
-module.exports = {callInfo, timeNow};
+module.exports = {callInfo, timeNow, timeChat};
