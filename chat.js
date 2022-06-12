@@ -30,7 +30,7 @@ con.connect(function(err) {
     });
 
     // Get the latest 30 chat messages from the database and put in global variable
-    var initialSql = 'SELECT * FROM (SELECT * FROM chat ORDER BY datetime DESC LIMIT 30) as foo ORDER BY datetime ASC';
+    var initialSql = 'SELECT * FROM (SELECT * FROM chat ORDER BY datetime DESC LIMIT 50) as foo ORDER BY datetime ASC';
     con.query(initialSql, function (err, result) {
         if (err) throw err;
         Object.keys(result).forEach(function(key) {
@@ -94,7 +94,10 @@ io.on("connection", socket => {
     })
 
     socket.on('chat-delete-client',async messageId => {
-        // Delete the message
+        // Delete message from the global variable allMessages
+        allMessages.splice(allMessages.findIndex(e => e.index === messageId),1);
+        
+        // Delete the message from the database
         sql = "DELETE FROM chat WHERE `id` = ?";
         
         var id = [messageId];
