@@ -18,6 +18,13 @@ const io = socketio(server, {
 io.on("connection", async (socket) => {
     // Call the function that sends the stream info to the new listener
     await sendToNew(socket);
+    // Send the stream info to an existing listener
+    socket.on('streaminforequest', async () => {
+        var response = await getResponse();
+        if (await response) {
+            socket.emit('streaminfoinitial', await response );
+        }
+    });
 });
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
